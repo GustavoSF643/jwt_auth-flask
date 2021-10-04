@@ -3,5 +3,6 @@ from flask_migrate import Migrate
 
 
 def init_app(app: Flask):
-# import da class
+    from app.models import user_model
+
     Migrate(app, app.db)
