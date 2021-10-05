@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from app.configs.database import db
 from app.configs.auth import auth
-from app.exceptions.user_exc import WrongPasswordError
+from app.exceptions.user_exc import InvalidKeysError, WrongPasswordError
 from flask import current_app
 from sqlalchemy import Column, Integer, String
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -52,6 +52,12 @@ class UserModel(db.Model):
         self.api_key = api_key
 
     def update_user(self, data):
+        try:
+            UserModel(**data)
+        except TypeError:
+            keys = ('name', 'last_name', 'email', 'password')
+            raise InvalidKeysError(f"Invalid Keys in body. Accepted Keys:{', '.join(keys)}")
+
         for key, value in data.items():
             setattr(self, key, value)
         

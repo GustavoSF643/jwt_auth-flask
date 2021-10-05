@@ -1,5 +1,5 @@
 import sqlalchemy
-from app.exceptions.user_exc import WrongPasswordError
+from app.exceptions.user_exc import InvalidKeysError, WrongPasswordError
 from app.models.user_model import UserModel
 from flask import request, jsonify
 from app.configs.auth import auth
@@ -46,15 +46,16 @@ def get_user():
 
 @auth.login_required
 def update_user():
+    try:
+        user_data = request.json
 
-    user_data = request.json
+        user: UserModel = auth.current_user()
+        user.update_user(user_data)
+        user.save()
 
-    user: UserModel = auth.current_user()
-    user.update_user(user_data)
-    user.save()
-
-    return jsonify(user), 200
-
+        return jsonify(user), 200
+    except InvalidKeysError as e:
+        return jsonify({'message': str(e)}), 406
 
 @auth.login_required
 def delete_user():
